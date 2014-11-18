@@ -1,4 +1,5 @@
 using Windows.ApplicationModel;
+using Windows.Storage;
 
 namespace System.IO
 {
@@ -6,13 +7,25 @@ namespace System.IO
     {
         public static bool Exists(string path)
         {
+            return GetStorageFile(path) != null;
+        }
+
+        public static Stream OpenRead(string path)
+        {
+            throw new NotImplementedException();
+        }
+
+        // Helpers
+
+        static StorageFile GetStorageFile(string path)
+        {
             if (String.IsNullOrWhiteSpace(path))
-                return false;
+                return null;
 
             var folder = Package.Current.InstalledLocation;
 
             if (!path.Contains(folder.Path))
-                return false;
+                return null;
 
             var fileName = Path.GetFileName(path);
             var fileAsync = folder.GetFileAsync(fileName);
@@ -20,11 +33,17 @@ namespace System.IO
             try
             {
                 fileAsync.AsTask().Wait();
-                return fileAsync.GetResults() != null;
+                return fileAsync.GetResults();
             }
-            catch { }
+            catch
+            {
+                return null;
+            }
+        }
 
-            return false;
+        public static Stream OpenRead(string path)
+        {
+            throw new NotImplementedException();
         }
     }
 }
